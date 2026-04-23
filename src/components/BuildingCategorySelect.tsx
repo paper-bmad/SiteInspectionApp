@@ -1,4 +1,3 @@
-import React from 'react';
 import { Listbox } from '@headlessui/react';
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { CONSTRUCTION_TYPES } from '../constants/buildingCategories';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { format, addMonths } from 'date-fns';
 import { TimelineBar } from './TimelineBar';
 import type { BlockTimeline } from '../../types/project';

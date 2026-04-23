@@ -1,4 +1,3 @@
-import React from 'react';
 import { format, differenceInDays, isAfter, isBefore, isToday } from 'date-fns';
 
 interface TimelineBarProps {

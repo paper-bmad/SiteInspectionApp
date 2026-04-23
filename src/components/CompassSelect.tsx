@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Listbox } from '@headlessui/react';
 import { ChevronUpDownIcon, ArrowUpIcon } from '@heroicons/react/20/solid';
 

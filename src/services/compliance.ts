@@ -1,6 +1,4 @@
 import type {
-  BuildingParameters,
-  ComplianceDomain,
   ComplianceQuery,
   ComplianceReport,
   DomainResult,
@@ -63,7 +61,7 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
   const isHighRise = bp.numberOfStoreys > 4;
   const isLargeBuilding = bp.floorAreaM2 > 500;
 
-  const domainResults: DomainResult[] = domains.map((domain) => {
+  const domainResults: DomainResult[] = domains.map((domain): DomainResult => {
     switch (domain) {
       case 'fire_safety':
         return {
@@ -114,7 +112,7 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
               document: 'Approved Document B',
               title: 'Access & Facilities for Fire Services',
               requirement: 'Adequate access for fire appliances and facilities for firefighting.',
-              status: isLargeBuilding ? 'requires_review' : 'pass',
+              status: isLargeBuilding ? 'warning' : 'pass',
             },
           ],
         };
@@ -171,7 +169,7 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
               document: 'Approved Document A',
               title: 'Disproportionate Collapse',
               requirement: 'Building must be designed to avoid disproportionate collapse.',
-              status: isHighRise ? 'requires_review' : 'pass',
+              status: isHighRise ? 'warning' : 'pass',
               notes: isHighRise ? 'Class 3 building — formal structural risk assessment required.' : undefined,
             },
           ],
@@ -189,7 +187,7 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
               document: 'Approved Document L',
               title: 'New Dwellings — Conservation of Fuel & Power',
               requirement: 'Fabric energy efficiency standard and primary energy target must be met.',
-              status: 'requires_review',
+              status: 'info',
               notes: 'SAP calculation required to confirm compliance with energy target.',
             },
           ],
@@ -251,7 +249,7 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
               document: 'SAP 2012 (BREDEM)',
               title: 'Primary Energy Calculation',
               requirement: 'Primary energy target must not be exceeded.',
-              status: 'requires_review',
+              status: 'info',
               notes: `Estimated floor area: ${bp.floorAreaM2}m². Full SAP calculation must be submitted to BCO.`,
             },
           ],

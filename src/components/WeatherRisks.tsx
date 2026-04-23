@@ -1,4 +1,3 @@
-import React from 'react';
 import { useWeatherRisks } from '../hooks/useWeatherRisks';
 
 interface WeatherRisksProps {

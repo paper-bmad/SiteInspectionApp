@@ -1,5 +1,4 @@
 import { RouteProp } from '@react-navigation/core';
-import * as React from "react";
 import { StyleSheet } from "react-nativescript";
 import { FrameNavigationProp } from "react-nativescript-navigation";
 

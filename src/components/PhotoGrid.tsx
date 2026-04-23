@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Photo } from '../types/inspection';
 
 interface PhotoGridProps {

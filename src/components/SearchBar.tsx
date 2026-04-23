@@ -1,4 +1,3 @@
-import React from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 
 interface SearchBarProps {

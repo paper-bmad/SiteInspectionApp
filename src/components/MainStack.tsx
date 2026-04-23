@@ -1,5 +1,4 @@
 import { BaseNavigationContainer } from '@react-navigation/core';
-import * as React from 'react';
 import { stackNavigatorFactory } from 'react-nativescript-navigation';
 
 import { LoginScreen } from './LoginScreen';

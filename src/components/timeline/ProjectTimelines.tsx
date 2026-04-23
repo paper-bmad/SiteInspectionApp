@@ -1,4 +1,3 @@
-import React from 'react';
 import { BlockTimeline } from './BlockTimeline';
 import type { BlockTimeline as BlockTimelineType } from '../../types/project';
 

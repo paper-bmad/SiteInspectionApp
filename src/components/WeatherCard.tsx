@@ -1,4 +1,3 @@
-import React from 'react';
 import { format } from 'date-fns';
 import { useWeather } from '../hooks/useWeather';
 import { LoadingSpinner } from './LoadingSpinner';
