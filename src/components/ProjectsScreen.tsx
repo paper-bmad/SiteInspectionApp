@@ -484,16 +484,22 @@ export function ProjectsScreen() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-bold text-gradient">BuildwellAI</h1>
-            <div className="flex items-center gap-4">
-              <button 
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/compliance')}
+                className="btn btn-primary flex items-center gap-2"
+              >
+                <span>Compliance Check</span>
+              </button>
+              <button
                 onClick={handlePreferences}
                 className="btn btn-secondary"
               >
-                My Preferences
+                Preferences
               </button>
-              <button 
-                onClick={handleLogout} 
-                className="btn btn-primary"
+              <button
+                onClick={handleLogout}
+                className="btn btn-secondary"
               >
                 Logout
               </button>

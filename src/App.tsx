@@ -6,6 +6,7 @@ import { ProjectBriefing } from './components/ProjectBriefing';
 import { InspectionScreen } from './components/InspectionScreen';
 import { InspectionReview } from './components/InspectionReview';
 import { UserPreferencesScreen } from './components/UserPreferences';
+import { ComplianceChecker } from './components/ComplianceChecker';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -55,6 +56,14 @@ function App() {
           element={
             <PrivateRoute>
               <InspectionReview />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/compliance"
+          element={
+            <PrivateRoute>
+              <ComplianceChecker />
             </PrivateRoute>
           }
         />

@@ -1,0 +1,267 @@
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronLeftIcon, DocumentCheckIcon } from '@heroicons/react/20/solid';
+import type {
+  BuildingParameters,
+  BuildingUse,
+  ComplianceDomain,
+  ComplianceQuery,
+  ComplianceReport,
+  ConstructionType,
+} from '../types/compliance';
+import { DOMAIN_LABELS } from '../types/compliance';
+import { complianceService } from '../services/compliance';
+import { ComplianceReport as ComplianceReportView } from './ComplianceReport';
+
+const BUILDING_USES: BuildingUse[] = [
+  'Residential', 'Commercial', 'Mixed Use', 'Industrial', 'Education', 'Healthcare',
+];
+const CONSTRUCTION_TYPES: ConstructionType[] = [
+  'Timber Frame', 'Masonry', 'Steel Frame', 'Concrete Frame', 'Cross Laminated Timber',
+];
+const ALL_DOMAINS: ComplianceDomain[] = [
+  'fire_safety', 'ventilation', 'structural', 'energy', 'overheating', 'acoustics', 'sap',
+];
+
+const DEFAULT_PARAMS: BuildingParameters = {
+  buildingUse: 'Residential',
+  constructionType: 'Masonry',
+  numberOfStoreys: 3,
+  floorAreaM2: 300,
+  occupancyEstimate: 20,
+  hasBasement: false,
+  hasAtrium: false,
+};
+
+export function ComplianceChecker() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get('projectId') || undefined;
+
+  const [params, setParams] = useState<BuildingParameters>(DEFAULT_PARAMS);
+  const [domains, setDomains] = useState<ComplianceDomain[]>(['fire_safety', 'ventilation']);
+  const [additionalContext, setAdditionalContext] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
+  const [report, setReport] = useState<ComplianceReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleDomain = (domain: ComplianceDomain) => {
+    setDomains((prev) =>
+      prev.includes(domain) ? prev.filter((d) => d !== domain) : [...prev, domain]
+    );
+  };
+
+  const handleCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (domains.length === 0) {
+      setError('Select at least one regulation domain to check.');
+      return;
+    }
+    setIsChecking(true);
+    setError(null);
+    setReport(null);
+    try {
+      const query: ComplianceQuery = {
+        id: `query-${Date.now()}`,
+        projectId,
+        buildingParameters: params,
+        domains,
+        additionalContext: additionalContext || undefined,
+        createdAt: new Date().toISOString(),
+      };
+      const result = await complianceService.check(query);
+      setReport(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Compliance check failed. Please try again.');
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  if (report) {
+    return (
+      <ComplianceReportView
+        report={report}
+        onBack={() => setReport(null)}
+        onNewCheck={() => { setReport(null); setParams(DEFAULT_PARAMS); }}
+      />
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center gap-4 p-4 max-w-2xl mx-auto">
+          <button
+            onClick={() => navigate(projectId ? `/projects/${projectId}` : '/projects')}
+            className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <ChevronLeftIcon className="w-5 h-5 text-gray-600" />
+          </button>
+          <div className="flex items-center gap-2">
+            <DocumentCheckIcon className="w-6 h-6 text-primary" />
+            <h1 className="text-lg font-bold text-gray-900">Compliance Checker</h1>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-2xl mx-auto p-4 pb-16 space-y-6">
+        <div className="card">
+          <p className="text-sm text-gray-600">
+            Enter your building parameters to check compliance against UK Building Regulations.
+            Covers Approved Documents A, B, E, F, L, and O.
+          </p>
+        </div>
+
+        <form onSubmit={handleCheck} className="space-y-6">
+          <div className="card space-y-4">
+            <h2 className="font-semibold text-gray-900">Building Parameters</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Building Use</label>
+                <select
+                  value={params.buildingUse}
+                  onChange={(e) => setParams({ ...params, buildingUse: e.target.value as BuildingUse })}
+                  className="input w-full"
+                >
+                  {BUILDING_USES.map((use) => (
+                    <option key={use} value={use}>{use}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Construction Type</label>
+                <select
+                  value={params.constructionType}
+                  onChange={(e) => setParams({ ...params, constructionType: e.target.value as ConstructionType })}
+                  className="input w-full"
+                >
+                  {CONSTRUCTION_TYPES.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Number of Storeys</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={params.numberOfStoreys}
+                  onChange={(e) => setParams({ ...params, numberOfStoreys: parseInt(e.target.value) || 1 })}
+                  className="input w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Floor Area (m²)</label>
+                <input
+                  type="number"
+                  min={10}
+                  value={params.floorAreaM2}
+                  onChange={(e) => setParams({ ...params, floorAreaM2: parseInt(e.target.value) || 10 })}
+                  className="input w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Occupancy</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={params.occupancyEstimate}
+                  onChange={(e) => setParams({ ...params, occupancyEstimate: parseInt(e.target.value) || 1 })}
+                  className="input w-full"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={params.hasBasement}
+                  onChange={(e) => setParams({ ...params, hasBasement: e.target.checked })}
+                  className="w-4 h-4 accent-primary"
+                />
+                <span className="text-sm text-gray-700">Has Basement</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={params.hasAtrium}
+                  onChange={(e) => setParams({ ...params, hasAtrium: e.target.checked })}
+                  className="w-4 h-4 accent-primary"
+                />
+                <span className="text-sm text-gray-700">Has Atrium</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="card space-y-3">
+            <h2 className="font-semibold text-gray-900">Regulation Domains</h2>
+            <p className="text-sm text-gray-500">Select the regulations to check against:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {ALL_DOMAINS.map((domain) => (
+                <label
+                  key={domain}
+                  className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${
+                    domains.includes(domain)
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={domains.includes(domain)}
+                    onChange={() => toggleDomain(domain)}
+                    className="w-4 h-4 accent-primary"
+                  />
+                  <span className="text-sm font-medium text-gray-700">{DOMAIN_LABELS[domain]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="card space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Additional Context (optional)</label>
+            <textarea
+              value={additionalContext}
+              onChange={(e) => setAdditionalContext(e.target.value)}
+              placeholder="e.g. Corner plot, shared boundary with existing building, ASHP installation..."
+              rows={3}
+              className="input w-full resize-none"
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isChecking || domains.length === 0}
+            className="btn btn-primary w-full"
+          >
+            {isChecking ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Checking compliance…
+              </span>
+            ) : (
+              'Run Compliance Check'
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

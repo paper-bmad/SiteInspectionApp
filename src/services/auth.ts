@@ -1,41 +1,51 @@
-const TOKEN_KEY = 'auth_token';
+import { supabase } from '../lib/supabase';
 
-const TEST_CREDENTIALS = {
-  username: 'test',
-  password: 'test'
-};
+const TOKEN_KEY = 'auth_token';
+const SUPABASE_CONFIGURED = !!(
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export const authService = {
-  login: async (username: string, password: string): Promise<boolean> => {
-    try {
-      // Check test credentials
-      if (username === TEST_CREDENTIALS.username && password === TEST_CREDENTIALS.password) {
-        localStorage.setItem(TOKEN_KEY, 'mock_token');
+  login: async (email: string, password: string): Promise<boolean> => {
+    if (SUPABASE_CONFIGURED) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (!error) {
+        localStorage.setItem(TOKEN_KEY, 'supabase_session');
         return true;
       }
-      
-      // Fallback to demo credentials for backward compatibility
-      if (username === 'demo' && password === 'demo') {
-        localStorage.setItem(TOKEN_KEY, 'mock_token');
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Login failed:', error);
-      return false;
+      throw new Error(error.message);
     }
+
+    // Demo mode fallback when Supabase is not configured
+    if (
+      (email === 'test' || email === 'test@buildwell.ai') &&
+      (password === 'test')
+    ) {
+      localStorage.setItem(TOKEN_KEY, 'mock_token');
+      return true;
+    }
+    if (email === 'demo' && password === 'demo') {
+      localStorage.setItem(TOKEN_KEY, 'mock_token');
+      return true;
+    }
+    throw new Error('Invalid credentials');
   },
 
-  getToken: (): string | null => {
-    return localStorage.getItem(TOKEN_KEY);
+  signup: async (email: string, password: string): Promise<boolean> => {
+    if (!SUPABASE_CONFIGURED) throw new Error('Sign-up requires Supabase configuration.');
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) throw new Error(error.message);
+    return true;
   },
 
-  isAuthenticated: (): boolean => {
-    return !!localStorage.getItem(TOKEN_KEY);
-  },
+  getToken: (): string | null => localStorage.getItem(TOKEN_KEY),
 
-  logout: (): void => {
+  isAuthenticated: (): boolean => !!localStorage.getItem(TOKEN_KEY),
+
+  logout: async (): Promise<void> => {
+    if (SUPABASE_CONFIGURED) await supabase.auth.signOut();
     localStorage.removeItem(TOKEN_KEY);
-  }
+  },
+
+  isDemoMode: (): boolean => !SUPABASE_CONFIGURED,
 };
