@@ -5,8 +5,48 @@ import type {
   ComplianceReport,
   DomainResult,
 } from '../types/compliance';
+import { supabase } from '../lib/supabase';
 
 const COMPLIANCE_API_URL = import.meta.env.VITE_COMPLIANCE_API_URL;
+const SUPABASE_CONFIGURED = !!(
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+);
+
+async function persistQuery(query: ComplianceQuery, userId: string): Promise<string | null> {
+  if (!SUPABASE_CONFIGURED) return null;
+  const bp = query.buildingParameters;
+  const { data, error } = await supabase.from('compliance_queries').insert({
+    id: query.id,
+    project_id: query.projectId || null,
+    user_id: userId,
+    building_use: bp.buildingUse,
+    construction_type: bp.constructionType,
+    number_of_storeys: bp.numberOfStoreys,
+    floor_area_m2: bp.floorAreaM2,
+    occupancy_estimate: bp.occupancyEstimate,
+    has_basement: bp.hasBasement,
+    has_atrium: bp.hasAtrium,
+    domains: query.domains,
+    additional_context: query.additionalContext || null,
+  }).select('id').single();
+  if (error) { console.warn('Failed to save compliance query:', error.message); return null; }
+  return data.id;
+}
+
+async function persistReport(report: ComplianceReport, userId: string): Promise<void> {
+  if (!SUPABASE_CONFIGURED) return;
+  const { error } = await supabase.from('compliance_reports').insert({
+    id: report.id,
+    query_id: report.queryId,
+    project_id: report.projectId || null,
+    user_id: userId,
+    overall_status: report.overallStatus,
+    domains: report.domains,
+    recommendations: report.recommendations,
+    regulation_documents: report.regulationDocuments,
+  });
+  if (error) console.warn('Failed to save compliance report:', error.message);
+}
 
 async function callComplianceAPI(query: ComplianceQuery): Promise<ComplianceReport> {
   const response = await fetch(`${COMPLIANCE_API_URL}/check`, {
@@ -258,14 +298,57 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
 
 export const complianceService = {
   async check(query: ComplianceQuery): Promise<ComplianceReport> {
+    let report: ComplianceReport;
     if (COMPLIANCE_API_URL) {
       try {
-        return await callComplianceAPI(query);
+        report = await callComplianceAPI(query);
       } catch (err) {
         console.warn('Compliance API unavailable, using demo mode:', err);
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        report = generateDemoReport(query);
+      }
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      report = generateDemoReport(query);
+    }
+
+    if (SUPABASE_CONFIGURED) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await persistQuery(query, user.id);
+        await persistReport(report, user.id);
       }
     }
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    return generateDemoReport(query);
+
+    return report;
+  },
+
+  async getHistory(projectId?: string): Promise<ComplianceReport[]> {
+    if (!SUPABASE_CONFIGURED) return [];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    let q = supabase
+      .from('compliance_reports')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('generated_at', { ascending: false })
+      .limit(20);
+
+    if (projectId) q = q.eq('project_id', projectId);
+
+    const { data, error } = await q;
+    if (error) { console.warn('Failed to fetch compliance history:', error.message); return []; }
+
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      queryId: row.query_id,
+      projectId: row.project_id,
+      generatedAt: row.generated_at,
+      overallStatus: row.overall_status,
+      domains: row.domains,
+      recommendations: row.recommendations,
+      regulationDocuments: row.regulation_documents,
+    }));
   },
 };

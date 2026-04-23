@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeftIcon, DocumentCheckIcon } from '@heroicons/react/20/solid';
+import { ChevronLeftIcon, DocumentCheckIcon, ClockIcon } from '@heroicons/react/20/solid';
 import type {
   BuildingParameters,
   BuildingUse,
@@ -44,6 +44,11 @@ export function ComplianceChecker() {
   const [isChecking, setIsChecking] = useState(false);
   const [report, setReport] = useState<ComplianceReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<ComplianceReport[]>([]);
+
+  useEffect(() => {
+    complianceService.getHistory(projectId).then(setHistory).catch(() => {});
+  }, [projectId]);
 
   const toggleDomain = (domain: ComplianceDomain) => {
     setDomains((prev) =>
@@ -261,6 +266,42 @@ export function ComplianceChecker() {
             )}
           </button>
         </form>
+
+        {history.length > 0 && (
+          <div className="card space-y-3">
+            <div className="flex items-center gap-2">
+              <ClockIcon className="w-5 h-5 text-gray-400" />
+              <h2 className="font-semibold text-gray-900">Recent Checks</h2>
+            </div>
+            <div className="space-y-2">
+              {history.map((pastReport) => (
+                <button
+                  key={pastReport.id}
+                  onClick={() => setReport(pastReport)}
+                  className="w-full text-left p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      pastReport.overallStatus === 'compliant'
+                        ? 'bg-green-100 text-green-700'
+                        : pastReport.overallStatus === 'non_compliant'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {pastReport.overallStatus.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(pastReport.generatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {pastReport.domains.length} domain{pastReport.domains.length !== 1 ? 's' : ''} checked
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
