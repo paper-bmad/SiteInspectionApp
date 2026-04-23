@@ -22,6 +22,11 @@ const CONSTRUCTION_TYPES: ConstructionType[] = [
 const ALL_DOMAINS: ComplianceDomain[] = [
   'fire_safety', 'ventilation', 'structural', 'energy', 'overheating', 'acoustics', 'sap',
   'drainage', 'access', 'electrical', 'security',
+  'site_prep', 'sanitation', 'falling', 'broadband', 'ev_charging',
+];
+
+const CORE_DOMAINS: ComplianceDomain[] = [
+  'fire_safety', 'structural', 'energy', 'ventilation',
 ];
 
 const DEFAULT_PARAMS: BuildingParameters = {
@@ -115,7 +120,7 @@ export function ComplianceChecker() {
         <div className="card">
           <p className="text-sm text-gray-600">
             Enter your building parameters to check compliance against UK Building Regulations.
-            Covers Approved Documents A, B, E, F, H, L, M, O, P, and Q.
+            Covers Approved Documents A, B, C, E, F, G, H, K, L, M, O, P, Q, R, and S.
           </p>
         </div>
 
@@ -208,7 +213,34 @@ export function ComplianceChecker() {
           </div>
 
           <div className="card space-y-3">
-            <h2 className="font-semibold text-gray-900">Regulation Domains</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-gray-900">Regulation Domains</h2>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDomains(CORE_DOMAINS)}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Core
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  type="button"
+                  onClick={() => setDomains([...ALL_DOMAINS])}
+                  className="text-xs text-primary hover:underline"
+                >
+                  All
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  type="button"
+                  onClick={() => setDomains([])}
+                  className="text-xs text-gray-400 hover:underline"
+                >
+                  None
+                </button>
+              </div>
+            </div>
             <p className="text-sm text-gray-500">Select the regulations to check against:</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {ALL_DOMAINS.map((domain) => (

@@ -9,7 +9,12 @@ export type ComplianceDomain =
   | 'drainage'
   | 'access'
   | 'electrical'
-  | 'security';
+  | 'security'
+  | 'site_prep'
+  | 'sanitation'
+  | 'falling'
+  | 'broadband'
+  | 'ev_charging';
 
 export type BuildingUse =
   | 'Residential'
@@ -85,4 +90,9 @@ export const DOMAIN_LABELS: Record<ComplianceDomain, string> = {
   access: 'Accessibility (Doc M)',
   electrical: 'Electrical Safety (Doc P)',
   security: 'Security (Doc Q)',
+  site_prep: 'Site Preparation (Doc C)',
+  sanitation: 'Sanitation (Doc G)',
+  falling: 'Falling Protection (Doc K)',
+  broadband: 'Broadband (Doc R)',
+  ev_charging: 'EV Charging (Doc S)',
 };

@@ -378,6 +378,164 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
           ],
         };
 
+      case 'site_prep':
+        return {
+          domain,
+          label: 'Site Preparation (Doc C)',
+          status: 'compliant',
+          summary: `Site preparation and resistance to contaminants assessed against Approved Document C for ${bp.buildingUse} building.`,
+          items: [
+            {
+              clause: 'C1',
+              document: 'Approved Document C',
+              title: 'Site Preparation',
+              requirement: 'Ground to be covered by building must be reasonably free from vegetable matter.',
+              status: 'pass',
+            },
+            {
+              clause: 'C2',
+              document: 'Approved Document C',
+              title: 'Resistance to Contaminants',
+              requirement: 'Building must be protected from contaminants in the ground.',
+              status: 'info',
+              notes: 'Phase 1 desk study recommended for all new build sites to identify potential ground contamination.',
+            },
+            {
+              clause: 'C3',
+              document: 'Approved Document C',
+              title: 'Resistance to Moisture',
+              requirement: 'Walls, floors and roof must resist moisture from the ground, rain and condensation.',
+              status: bp.hasBasement ? 'warning' : 'pass',
+              notes: bp.hasBasement ? 'Basement walls and floor require Type A, B, or C waterproofing system per BS 8102.' : undefined,
+            },
+          ],
+        };
+
+      case 'sanitation':
+        return {
+          domain,
+          label: 'Sanitation (Doc G)',
+          status: 'compliant',
+          summary: `Sanitation, hot water safety and water efficiency for ${bp.buildingUse} building assessed against Approved Document G.`,
+          items: [
+            {
+              clause: 'G1',
+              document: 'Approved Document G',
+              title: 'Cold Water Supply',
+              requirement: 'Wholesome cold water must be supplied for drinking, food preparation, washing and sanitary appliances.',
+              status: 'pass',
+            },
+            {
+              clause: 'G3',
+              document: 'Approved Document G',
+              title: 'Hot Water Supply',
+              requirement: 'Hot water systems must prevent scalding and Legionella risk. Thermostatic mixing valves required at point of use.',
+              status: 'warning',
+              notes: 'TMVs required at all baths (≤48°C) and in care homes/schools at all outlets (≤43°C).',
+            },
+            {
+              clause: 'G2',
+              document: 'Approved Document G',
+              title: 'Water Efficiency',
+              requirement: 'New dwellings must not exceed 125 litres/person/day (or 110 l/p/d in water-stressed areas).',
+              status: 'info',
+              notes: 'Confirm with local water authority whether water-stressed area applies.',
+            },
+          ],
+        };
+
+      case 'falling':
+        return {
+          domain,
+          label: 'Falling Protection (Doc K)',
+          status: bp.numberOfStoreys > 1 ? 'requires_review' : 'compliant',
+          summary: `Protection from falling, collision and impact for ${bp.numberOfStoreys}-storey ${bp.buildingUse} building assessed against Approved Document K.`,
+          items: [
+            {
+              clause: 'K1',
+              document: 'Approved Document K',
+              title: 'Stairs and Ramps',
+              requirement: 'Stairs must have: max riser 220mm, min going 220mm (private), min going 250mm (common); max pitch 42°.',
+              status: 'info',
+              notes: 'Stair design must be confirmed against Approved Document K Table 1.1 for the specific use category.',
+            },
+            {
+              clause: 'K2',
+              document: 'Approved Document K',
+              title: 'Protection from Falling',
+              requirement: 'Guarding required where floor or roof is more than 600mm above adjacent level.',
+              status: bp.numberOfStoreys > 1 ? 'warning' : 'pass',
+              notes: bp.numberOfStoreys > 1
+                ? `Min guarding height: 900mm in dwellings, 1100mm in commercial. Confirm balustrade loading to BS EN 1991-1-1.`
+                : undefined,
+            },
+            {
+              clause: 'K3',
+              document: 'Approved Document K',
+              title: 'Vehicle Barriers and Loading Bays',
+              requirement: 'Vehicle barriers required at edges of floors accessible to vehicles.',
+              status: bp.hasBasement ? 'warning' : 'pass',
+              notes: bp.hasBasement ? 'Basement car park requires vehicle barriers at ramp edges.' : undefined,
+            },
+          ],
+        };
+
+      case 'broadband':
+        return {
+          domain,
+          label: 'Broadband (Doc R)',
+          status: 'compliant',
+          summary: `Physical infrastructure for high-speed broadband in ${bp.buildingUse} development assessed against Approved Document R.`,
+          items: [
+            {
+              clause: 'R1',
+              document: 'Approved Document R',
+              title: 'In-building Physical Infrastructure',
+              requirement: 'New buildings must be equipped with a gigabit-ready in-building physical infrastructure.',
+              status: 'pass',
+              notes: 'Duct routes, connection points, and access point to network termination point required.',
+            },
+            {
+              clause: 'R1 — Multi-dwelling',
+              document: 'Approved Document R',
+              title: 'Multi-dwelling Access Point',
+              requirement: 'Buildings with more than one dwelling unit require a common access point.',
+              status: bp.numberOfStoreys > 1 ? 'info' : 'pass',
+              notes: bp.numberOfStoreys > 1 ? 'Ensure a common access point with minimum 10×10cm duct is provided to the site boundary.' : undefined,
+            },
+          ],
+        };
+
+      case 'ev_charging':
+        return {
+          domain,
+          label: 'EV Charging (Doc S)',
+          status: bp.buildingUse === 'Residential' ? 'compliant' : 'requires_review',
+          summary: `EV charging infrastructure requirements for ${bp.buildingUse} building assessed against Approved Document S.`,
+          items: [
+            {
+              clause: 'S1',
+              document: 'Approved Document S',
+              title: 'New Residential Buildings',
+              requirement: 'New residential buildings with associated parking must have an active EV charge point per dwelling.',
+              status: bp.buildingUse === 'Residential' ? 'warning' : 'pass',
+              notes: bp.buildingUse === 'Residential'
+                ? 'Each parking space requires a 7kW (32A) charge point with smart functionality. Confirm parking layout with structural engineer.'
+                : undefined,
+            },
+            {
+              clause: 'S2',
+              document: 'Approved Document S',
+              title: 'New Non-residential Buildings',
+              requirement: 'New non-residential buildings with more than 10 parking spaces must provide EV charge points (1 in 5 spaces).',
+              status: bp.buildingUse !== 'Residential' ? 'info' : 'pass',
+              notes: bp.buildingUse !== 'Residential'
+                ? 'Confirm number of parking spaces and calculate required active/passive provision ratio.'
+                : undefined,
+            },
+          ],
+        };
+
       default:
         return {
           domain,
@@ -419,6 +577,11 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
       ...domains.includes('access') ? ['Approved Document M (Access to and Use of Buildings) 2015'] : [],
       ...domains.includes('electrical') ? ['Approved Document P (Electrical Safety) 2013'] : [],
       ...domains.includes('security') ? ['Approved Document Q (Security) 2015'] : [],
+      ...domains.includes('site_prep') ? ['Approved Document C (Site Preparation) 2004'] : [],
+      ...domains.includes('sanitation') ? ['Approved Document G (Sanitation, Hot Water Safety and Water Efficiency) 2015'] : [],
+      ...domains.includes('falling') ? ['Approved Document K (Protection from Falling) 2013'] : [],
+      ...domains.includes('broadband') ? ['Approved Document R (Physical Infrastructure) 2022'] : [],
+      ...domains.includes('ev_charging') ? ['Approved Document S (Infrastructure for Charging Electric Vehicles) 2021'] : [],
     ],
   };
 }
