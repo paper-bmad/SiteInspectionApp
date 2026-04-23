@@ -255,6 +255,129 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
           ],
         };
 
+      case 'drainage':
+        return {
+          domain,
+          label: 'Drainage (Doc H)',
+          status: 'compliant',
+          summary: `Drainage and waste disposal requirements for ${bp.buildingUse} building assessed against Approved Document H.`,
+          items: [
+            {
+              clause: 'H1',
+              document: 'Approved Document H',
+              title: 'Foul Water Drainage',
+              requirement: 'Adequate foul water drainage must be provided to carry foul water to a sewer, cesspool or septic tank.',
+              status: 'pass',
+            },
+            {
+              clause: 'H2',
+              document: 'Approved Document H',
+              title: 'Wastewater Treatment',
+              requirement: 'Where no public sewer is available, a suitable wastewater treatment system must be provided.',
+              status: 'info',
+              notes: 'Confirm connection to public sewer or provide wastewater treatment details to BCO.',
+            },
+            {
+              clause: 'H3',
+              document: 'Approved Document H',
+              title: 'Rainwater Drainage',
+              requirement: 'Adequate provision for rainwater drainage must be made.',
+              status: bp.floorAreaM2 > 500 ? 'warning' : 'pass',
+              notes: bp.floorAreaM2 > 500
+                ? 'Large roof area — sustainable drainage system (SuDS) may be required under Schedule 3 of the Flood & Water Management Act 2010.'
+                : undefined,
+            },
+          ],
+        };
+
+      case 'access':
+        return {
+          domain,
+          label: 'Accessibility (Doc M)',
+          status: bp.buildingUse === 'Residential' ? 'compliant' : 'requires_review',
+          summary: `Access and use requirements for ${bp.buildingUse} building assessed against Approved Document M.`,
+          items: [
+            {
+              clause: 'M4(1)',
+              document: 'Approved Document M',
+              title: 'Category 1 — Visitable Dwellings',
+              requirement: 'New dwellings must meet minimum accessibility standards (step-free access, accessible entrance level WC).',
+              status: bp.buildingUse === 'Residential' ? 'pass' : 'info',
+            },
+            {
+              clause: 'M4(2)',
+              document: 'Approved Document M',
+              title: 'Category 2 — Accessible and Adaptable',
+              requirement: 'Higher accessibility standard for dwellings — wider doorways, level access shower, step-free throughout.',
+              status: 'info',
+              notes: 'Check local planning policy — some LPAs require M4(2) or M4(3) as a planning condition.',
+            },
+            {
+              clause: 'M2',
+              document: 'Approved Document M',
+              title: 'Access to Non-Domestic Buildings',
+              requirement: 'Non-domestic buildings must provide accessible entrance, accessible sanitary facilities, and suitable internal circulation.',
+              status: bp.buildingUse !== 'Residential' ? 'warning' : 'pass',
+              notes: bp.buildingUse !== 'Residential'
+                ? `${bp.buildingUse} buildings require DDA-compliant access audit — confirm with access consultant.`
+                : undefined,
+            },
+          ],
+        };
+
+      case 'electrical':
+        return {
+          domain,
+          label: 'Electrical Safety (Doc P)',
+          status: 'compliant',
+          summary: `Electrical safety requirements for ${bp.buildingUse} dwelling assessed against Approved Document P.`,
+          items: [
+            {
+              clause: 'P1',
+              document: 'Approved Document P',
+              title: 'Design and Installation',
+              requirement: 'Electrical installations must be designed and installed to protect persons from fire and injury.',
+              status: 'pass',
+            },
+            {
+              clause: 'P1 — Notification',
+              document: 'Approved Document P',
+              title: 'Notifiable Work',
+              requirement: 'Certain electrical installation work in dwellings must be notified to the local authority.',
+              status: 'info',
+              notes: 'New circuits, consumer unit replacements, and work in bathrooms/gardens are notifiable under Part P.',
+            },
+          ],
+        };
+
+      case 'security':
+        return {
+          domain,
+          label: 'Security (Doc Q)',
+          status: 'compliant',
+          summary: `Security requirements for ${bp.buildingUse} dwelling assessed against Approved Document Q.`,
+          items: [
+            {
+              clause: 'Q1',
+              document: 'Approved Document Q',
+              title: 'Unauthorised Access',
+              requirement: 'Doors and windows in new dwellings must resist physical attack and be securely locked.',
+              status: 'pass',
+              notes: 'Entrance doors must meet PAS 24:2016. Ground floor / accessible windows must also meet PAS 24.',
+            },
+            {
+              clause: 'Q1 — Timber Doors',
+              document: 'Approved Document Q',
+              title: 'Timber Door Sets',
+              requirement: 'Timber entrance door sets must comply with Appendix A of Approved Document Q.',
+              status: bp.constructionType === 'Timber Frame' ? 'warning' : 'pass',
+              notes: bp.constructionType === 'Timber Frame'
+                ? 'Confirm door set certification to PAS 24 for timber frame dwellings.'
+                : undefined,
+            },
+          ],
+        };
+
       default:
         return {
           domain,
@@ -282,6 +405,8 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
       'Submit SAP calculation and EPC application before practical completion.',
       'Ensure O&M manuals for all building services are compiled for Handover Stage.',
       ...(bp.hasBasement ? ['Obtain full geotechnical report and waterproofing strategy for basement elements.'] : []),
+      ...(domains.includes('drainage') && bp.floorAreaM2 > 500 ? ['Engage drainage engineer for SuDS strategy — large roof area triggers Schedule 3 FWMA 2010.'] : []),
+      ...(domains.includes('access') && bp.buildingUse !== 'Residential' ? ['Commission access audit from accredited consultant to confirm Part M compliance for non-domestic use.'] : []),
     ],
     regulationDocuments: [
       ...domains.includes('fire_safety') ? ['Approved Document B (Fire Safety) 2019'] : [],
@@ -290,6 +415,10 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
       ...domains.includes('energy') || domains.includes('sap') ? ['Approved Document L (Conservation of Fuel and Power) 2021'] : [],
       ...domains.includes('overheating') ? ['Approved Document O (Overheating) 2021'] : [],
       ...domains.includes('acoustics') ? ['Approved Document E (Resistance to Sound) 2003'] : [],
+      ...domains.includes('drainage') ? ['Approved Document H (Drainage and Waste Disposal) 2015'] : [],
+      ...domains.includes('access') ? ['Approved Document M (Access to and Use of Buildings) 2015'] : [],
+      ...domains.includes('electrical') ? ['Approved Document P (Electrical Safety) 2013'] : [],
+      ...domains.includes('security') ? ['Approved Document Q (Security) 2015'] : [],
     ],
   };
 }

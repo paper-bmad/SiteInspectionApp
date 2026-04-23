@@ -5,7 +5,11 @@ export type ComplianceDomain =
   | 'energy'
   | 'overheating'
   | 'acoustics'
-  | 'sap';
+  | 'sap'
+  | 'drainage'
+  | 'access'
+  | 'electrical'
+  | 'security';
 
 export type BuildingUse =
   | 'Residential'
@@ -70,11 +74,15 @@ export interface ComplianceReport {
 }
 
 export const DOMAIN_LABELS: Record<ComplianceDomain, string> = {
-  fire_safety: 'Fire Safety (Doc B & L)',
+  fire_safety: 'Fire Safety (Doc B)',
   ventilation: 'Ventilation (Doc F)',
   structural: 'Structural (Doc A)',
   energy: 'Energy (Doc L)',
   overheating: 'Overheating (Doc O)',
   acoustics: 'Sound Insulation (Doc E)',
   sap: 'SAP Energy Rating',
+  drainage: 'Drainage (Doc H)',
+  access: 'Accessibility (Doc M)',
+  electrical: 'Electrical Safety (Doc P)',
+  security: 'Security (Doc Q)',
 };

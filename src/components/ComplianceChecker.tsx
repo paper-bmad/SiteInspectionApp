@@ -21,6 +21,7 @@ const CONSTRUCTION_TYPES: ConstructionType[] = [
 ];
 const ALL_DOMAINS: ComplianceDomain[] = [
   'fire_safety', 'ventilation', 'structural', 'energy', 'overheating', 'acoustics', 'sap',
+  'drainage', 'access', 'electrical', 'security',
 ];
 
 const DEFAULT_PARAMS: BuildingParameters = {
@@ -114,7 +115,7 @@ export function ComplianceChecker() {
         <div className="card">
           <p className="text-sm text-gray-600">
             Enter your building parameters to check compliance against UK Building Regulations.
-            Covers Approved Documents A, B, E, F, L, and O.
+            Covers Approved Documents A, B, E, F, H, L, M, O, P, and Q.
           </p>
         </div>
 
