@@ -57,6 +57,49 @@ async function callComplianceAPI(query: ComplianceQuery): Promise<ComplianceRepo
   return response.json();
 }
 
+async function callComplianceAPIStream(
+  query: ComplianceQuery,
+  onChunk: (text: string) => void,
+): Promise<ComplianceReport> {
+  const response = await fetch(`${COMPLIANCE_API_URL}/check/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(query),
+  });
+  if (!response.ok) throw new Error(`Compliance API error: ${response.statusText}`);
+
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
+    let eventName = '';
+    for (const line of lines) {
+      if (line.startsWith('event: ')) {
+        eventName = line.slice(7).trim();
+      } else if (line.startsWith('data: ')) {
+        try {
+          const payload = JSON.parse(line.slice(6));
+          if (eventName === 'chunk' && payload.text) onChunk(payload.text);
+          if (eventName === 'complete' && payload.report) return payload.report as ComplianceReport;
+          if (eventName === 'error') throw new Error(payload.message || 'Stream error');
+        } catch (e) {
+          if (e instanceof SyntaxError) continue;
+          throw e;
+        }
+      }
+    }
+  }
+  throw new Error('Stream ended without a complete event');
+}
+
 function generateDemoReport(query: ComplianceQuery): ComplianceReport {
   const { buildingParameters: bp, domains } = query;
   const isHighRise = bp.numberOfStoreys > 4;
@@ -588,11 +631,16 @@ function generateDemoReport(query: ComplianceQuery): ComplianceReport {
 }
 
 export const complianceService = {
-  async check(query: ComplianceQuery): Promise<ComplianceReport> {
+  async check(
+    query: ComplianceQuery,
+    onChunk?: (text: string) => void,
+  ): Promise<ComplianceReport> {
     let report: ComplianceReport;
     if (COMPLIANCE_API_URL) {
       try {
-        report = await callComplianceAPI(query);
+        report = onChunk
+          ? await callComplianceAPIStream(query, onChunk)
+          : await callComplianceAPI(query);
       } catch (err) {
         console.warn('Compliance API unavailable, using demo mode:', err);
         await new Promise((resolve) => setTimeout(resolve, 800));
