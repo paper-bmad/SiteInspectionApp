@@ -78,6 +78,29 @@ export interface ComplianceReport {
   regulationDocuments: string[];
 }
 
+export interface DrawingClassification {
+  drawing_type: 'floor_plan' | 'elevation' | 'section' | 'site_plan' | 'detail' | 'schedule' | 'unknown';
+  confidence: number;
+  scale: string | null;
+  north_arrow_present: boolean;
+  notes: string;
+}
+
+export interface ComplianceRisk {
+  regulation: string;
+  observation: string;
+  riskLevel: 'low' | 'medium' | 'high';
+  action: string;
+}
+
+export interface DrawingAnalysis {
+  classification: DrawingClassification;
+  buildingParameters: BuildingParameters;
+  complianceRisks: ComplianceRisk[];
+  extractionConfidence: number;
+  extractionNotes: string;
+}
+
 export const DOMAIN_LABELS: Record<ComplianceDomain, string> = {
   fire_safety: 'Fire Safety (Doc B)',
   ventilation: 'Ventilation (Doc F)',

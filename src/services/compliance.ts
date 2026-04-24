@@ -2,6 +2,7 @@ import type {
   ComplianceQuery,
   ComplianceReport,
   DomainResult,
+  DrawingAnalysis,
 } from '../types/compliance';
 import { supabase } from '../lib/supabase';
 
@@ -640,5 +641,28 @@ export const complianceService = {
       recommendations: row.recommendations,
       regulationDocuments: row.regulation_documents,
     }));
+  },
+
+  async analyzeDrawing(file: File): Promise<DrawingAnalysis> {
+    if (!COMPLIANCE_API_URL) {
+      throw new Error('Vision analysis requires VITE_COMPLIANCE_API_URL to be configured.');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    const imageBase64 = btoa(binary);
+    const mediaType = file.type || 'image/png';
+
+    const response = await fetch(`${COMPLIANCE_API_URL}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, mediaType }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `Vision API error: ${response.statusText}`);
+    }
+    return response.json();
   },
 };

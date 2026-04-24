@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeftIcon, DocumentCheckIcon, ClockIcon } from '@heroicons/react/20/solid';
+import { ChevronLeftIcon, DocumentCheckIcon, ClockIcon, PhotoIcon, SparklesIcon } from '@heroicons/react/20/solid';
 import type {
   BuildingParameters,
   BuildingUse,
@@ -48,9 +48,13 @@ export function ComplianceChecker() {
   const [domains, setDomains] = useState<ComplianceDomain[]>(['fire_safety', 'ventilation']);
   const [additionalContext, setAdditionalContext] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const [analysisRisks, setAnalysisRisks] = useState<{regulation: string; observation: string; riskLevel: string; action: string}[]>([]);
   const [report, setReport] = useState<ComplianceReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ComplianceReport[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     complianceService.getHistory(projectId).then(setHistory).catch(() => {});
@@ -60,6 +64,29 @@ export function ComplianceChecker() {
     setDomains((prev) =>
       prev.includes(domain) ? prev.filter((d) => d !== domain) : [...prev, domain]
     );
+  };
+
+  const handleAnalyzeDrawing = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsAnalyzing(true);
+    setAnalyzeError(null);
+    setAnalysisRisks([]);
+    try {
+      const analysis = await complianceService.analyzeDrawing(file);
+      setParams(analysis.buildingParameters);
+      setAnalysisRisks(analysis.complianceRisks || []);
+      // Auto-select relevant domains based on risks found
+      if (analysis.complianceRisks?.length > 0) {
+        const riskDomains = new Set<ComplianceDomain>(['fire_safety', 'structural', 'ventilation']);
+        setDomains(Array.from(riskDomains));
+      }
+    } catch (err) {
+      setAnalyzeError(err instanceof Error ? err.message : 'Drawing analysis failed.');
+    } finally {
+      setIsAnalyzing(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleCheck = async (e: React.FormEvent) => {
@@ -122,6 +149,71 @@ export function ComplianceChecker() {
             Enter your building parameters to check compliance against UK Building Regulations.
             Covers Approved Documents A, B, C, E, F, G, H, K, L, M, O, P, Q, R, and S.
           </p>
+        </div>
+
+        {/* Drawing analysis */}
+        <div className="card space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <SparklesIcon className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold text-gray-900">Analyse Drawing</h2>
+            </div>
+            <span className="text-xs text-gray-400">AI-powered</span>
+          </div>
+          <p className="text-sm text-gray-500">
+            Upload a floor plan or elevation to auto-extract building parameters.
+            Requires compliance API to be configured.
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/tiff"
+            className="hidden"
+            onChange={handleAnalyzeDrawing}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isAnalyzing}
+            className="btn btn-secondary w-full flex items-center justify-center gap-2"
+          >
+            {isAnalyzing ? (
+              <>
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Analysing drawing…
+              </>
+            ) : (
+              <>
+                <PhotoIcon className="w-4 h-4" />
+                Upload Drawing
+              </>
+            )}
+          </button>
+          {analyzeError && (
+            <p className="text-sm text-red-600">{analyzeError}</p>
+          )}
+          {analysisRisks.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                {analysisRisks.length} item{analysisRisks.length !== 1 ? 's' : ''} found in drawing
+              </p>
+              {analysisRisks.slice(0, 3).map((risk, i) => (
+                <div key={i} className={`rounded-lg p-2 text-xs ${
+                  risk.riskLevel === 'high' ? 'bg-red-50 text-red-700' :
+                  risk.riskLevel === 'medium' ? 'bg-amber-50 text-amber-700' :
+                  'bg-blue-50 text-blue-700'
+                }`}>
+                  <span className="font-medium">{risk.regulation}</span> — {risk.observation}
+                </div>
+              ))}
+              {analysisRisks.length > 3 && (
+                <p className="text-xs text-gray-400">+{analysisRisks.length - 3} more (visible in full report)</p>
+              )}
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleCheck} className="space-y-6">
