@@ -48,6 +48,7 @@ export function ComplianceChecker() {
   const [domains, setDomains] = useState<ComplianceDomain[]>(['fire_safety', 'ventilation']);
   const [additionalContext, setAdditionalContext] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+  const [streamPreview, setStreamPreview] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [analysisRisks, setAnalysisRisks] = useState<{regulation: string; observation: string; riskLevel: string; action: string}[]>([]);
@@ -96,6 +97,7 @@ export function ComplianceChecker() {
       return;
     }
     setIsChecking(true);
+    setStreamPreview('');
     setError(null);
     setReport(null);
     try {
@@ -107,7 +109,13 @@ export function ComplianceChecker() {
         additionalContext: additionalContext || undefined,
         createdAt: new Date().toISOString(),
       };
-      const result = await complianceService.check(query);
+      const result = await complianceService.check(query, (chunk) => {
+        setStreamPreview((prev) => {
+          const next = prev + chunk;
+          return next.length > 300 ? '…' + next.slice(-280) : next;
+        });
+      });
+      setStreamPreview('');
       setReport(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Compliance check failed. Please try again.');
@@ -370,6 +378,13 @@ export function ComplianceChecker() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
               {error}
+            </div>
+          )}
+
+          {isChecking && streamPreview && (
+            <div className="rounded-xl bg-gray-900 p-3 font-mono text-xs text-green-400 overflow-hidden">
+              <p className="text-gray-500 text-[10px] mb-1 font-sans">Live generation</p>
+              <p className="whitespace-pre-wrap break-all leading-relaxed">{streamPreview}</p>
             </div>
           )}
 
