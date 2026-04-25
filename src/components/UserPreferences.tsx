@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { preferencesService } from '../services/preferences';
 import type { UserPreferences } from '../types/preferences';
@@ -13,6 +14,7 @@ const ACCENT_COLORS = [
 
 export function UserPreferencesScreen() {
   const queryClient = useQueryClient();
+  const [saved, setSaved] = useState(false);
   const { data: preferences, isLoading } = useQuery({
     queryKey: ['preferences'],
     queryFn: preferencesService.getPreferences
@@ -20,8 +22,10 @@ export function UserPreferencesScreen() {
 
   const updateMutation = useMutation({
     mutationFn: preferencesService.updatePreferences,
-    onSuccess: (_newPrefs) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['preferences'] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
     }
   });
 
@@ -308,7 +312,13 @@ export function UserPreferencesScreen() {
             </div>
           </section>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-4">
+            {updateMutation.isError && (
+              <p className="text-sm text-red-600">Failed to save. Please try again.</p>
+            )}
+            {saved && (
+              <p className="text-sm text-green-600 font-medium">Preferences saved!</p>
+            )}
             <button
               type="submit"
               className="btn btn-primary"
