@@ -1,4 +1,4 @@
-import { format, differenceInDays, isAfter, isBefore, isToday } from 'date-fns';
+import { format, differenceInDays, isAfter, isBefore } from 'date-fns';
 
 interface TimelineBarProps {
   startDate: string;

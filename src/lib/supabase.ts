@@ -45,7 +45,7 @@ export async function getWeatherData(latitude: number, longitude: number) {
 
     // Process forecast data to get daily forecasts
     const dailyForecasts = forecastData.list
-      .filter((item: any, index: number) => index % 8 === 0) // Get one forecast per day
+      .filter((_item: any, index: number) => index % 8 === 0) // Get one forecast per day
       .slice(0, 3); // Get next 3 days
 
     return {

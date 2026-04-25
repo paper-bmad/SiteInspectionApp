@@ -9,7 +9,7 @@ interface PhotoGridProps {
   isLoading: boolean;
 }
 
-export function PhotoGrid({ photos, onPhotoTap, onPhotoRemove, isLoading }: PhotoGridProps) {
+export function PhotoGrid({ photos, onPhotoTap, onPhotoRemove, isLoading: _isLoading }: PhotoGridProps) {
   if (photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 p-6">

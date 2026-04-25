@@ -13,7 +13,7 @@ export function InspectionScreen() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const project = location.state?.project;
+  void location.state?.project; // consumed via router state; keep for future use
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [currentPhoto, setCurrentPhoto] = useState<Photo | null>(null);
   const [currentCategory, setCurrentCategory] = useState<'Defect' | 'Risk' | 'Overview'>('Overview');
@@ -239,7 +239,6 @@ export function InspectionScreen() {
           onBack={handleBack}
           isLoading={isLoading}
           canGoBack={currentStep > 1}
-          constructionType={project?.construction?.superstructure?.type}
         />
       </main>
 

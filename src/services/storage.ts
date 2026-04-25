@@ -1,11 +1,10 @@
 import localforage from 'localforage';
-import type { Inspection, Project, Photo } from '../types/inspection';
+import type { Inspection, Photo } from '../types/inspection';
 import { inspectionSchema } from '../validation/schemas';
 import { z } from 'zod';
 import { preferencesService } from './preferences';
 
 const DRAFTS_KEY = 'inspection_drafts';
-const PROJECTS_KEY = 'cached_projects';
 const AUTO_SAVE_KEY = 'inspection_autosave';
 const PHOTOS_PREFIX = 'photos';
 const COUNTERS_KEY = 'reference_counters';
@@ -44,7 +43,7 @@ export const storageService = {
 
   saveDraft: async (inspection: Inspection): Promise<void> => {
     try {
-      const validatedInspection = inspectionSchema.parse(inspection);
+      const validatedInspection = inspectionSchema.parse(inspection) as unknown as Inspection;
       const drafts = await storageService.getDrafts();
       const existingIndex = drafts.findIndex(d => d.id === inspection.id);
       

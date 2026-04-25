@@ -72,6 +72,15 @@ export interface ProjectDetails {
       phone: string;
     };
   };
+  summary?: {
+    numApartments: number;
+    numLevels: number;
+    numCommercialUnitsBlock: number;
+    numDetachedHouses: number;
+    numSemiDetachedHouses: number;
+    numTerracedHouses: number;
+    numCommercialUnitsTotal: number;
+  };
   blocks: BlockTimeline[];
   appointment?: Appointment;
   insurance: Insurance;

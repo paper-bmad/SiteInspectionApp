@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { preferencesService } from '../services/preferences';
 import type { UserPreferences } from '../types/preferences';
@@ -21,7 +20,7 @@ export function UserPreferencesScreen() {
 
   const updateMutation = useMutation({
     mutationFn: preferencesService.updatePreferences,
-    onSuccess: (newPrefs) => {
+    onSuccess: (_newPrefs) => {
       queryClient.invalidateQueries({ queryKey: ['preferences'] });
     }
   });

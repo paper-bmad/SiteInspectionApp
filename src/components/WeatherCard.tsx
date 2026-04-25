@@ -57,7 +57,7 @@ export function WeatherCard({ latitude, longitude }: WeatherCardProps) {
 
         {/* Forecast */}
         <div className="grid grid-cols-3 gap-4 border-t pt-4">
-          {weather.forecast.map((day) => (
+          {weather.forecast.map((day: any) => (
             <div key={day.date} className="text-center">
               <div className="font-medium">{format(new Date(day.date), 'EEE')}</div>
               <img

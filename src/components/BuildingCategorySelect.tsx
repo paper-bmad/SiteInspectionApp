@@ -7,13 +7,13 @@ interface BuildingCategorySelectProps {
     constructionType: string;
     stage: string;
     item: string;
-    subitem?: string;
+    subitem: string | undefined;
   };
   onChange: (value: {
     constructionType: string;
     stage: string;
     item: string;
-    subitem?: string;
+    subitem: string | undefined;
   }) => void;
 }
 

@@ -1,7 +1,7 @@
 import { addMonths } from 'date-fns';
 import type { ProjectDetails, BlockTimeline } from '../types/project';
 
-export function generateBlocksFromSummary(summary: ProjectDetails['summary']): BlockTimeline[] {
+export function generateBlocksFromSummary(summary: NonNullable<ProjectDetails['summary']>): BlockTimeline[] {
   const blocks: BlockTimeline[] = [];
   let blockCounter = 65; // ASCII for 'A'
 

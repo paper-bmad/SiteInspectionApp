@@ -56,9 +56,9 @@ export function InspectionReview() {
                 {photo.category}
                 {photo.referenceId && ` - ${photo.referenceId}`}
               </span>
-              {photo.annotations?.length > 0 && (
+              {(photo.annotations?.length ?? 0) > 0 && (
                 <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                  {photo.annotations.length} annotations
+                  {photo.annotations!.length} annotations
                 </span>
               )}
             </div>
@@ -235,8 +235,9 @@ export function InspectionReview() {
 
       {annotatingPhoto && (
         <PhotoAnnotationTool
-          photo={annotatingPhoto}
-          onSave={(annotations) => handleSaveAnnotations(annotatingPhoto, annotations)}
+          imageUrl={annotatingPhoto.uri}
+          existingAnnotations={annotatingPhoto.annotations}
+          onSave={(annotations) => { handleSaveAnnotations(annotatingPhoto, annotations); }}
           onClose={() => setAnnotatingPhoto(null)}
         />
       )}

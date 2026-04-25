@@ -28,6 +28,12 @@ export interface Photo {
   annotations?: PhotoAnnotation[];
 }
 
+export interface BuildingSection {
+  id: string;
+  name: string;
+  subsections: string[];
+}
+
 export interface Inspection {
   id: string;
   projectId: string;
@@ -37,4 +43,9 @@ export interface Inspection {
   updatedAt: string;
   defectCounter: number;
   riskCounter: number;
+  // Optional UI session state persisted for restore-on-reload
+  currentStep?: number;
+  currentCategory?: 'Defect' | 'Risk' | 'Overview';
+  currentNote?: string;
+  currentPhoto?: Photo | null;
 }

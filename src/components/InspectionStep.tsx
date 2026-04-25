@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { Photo } from '../types/inspection';
 import { BuildingCategorySelect } from './BuildingCategorySelect';
-import { CompassSelect } from './CompassSelect';
 import { CameraPreview } from './CameraPreview';
 import { NoteEditor } from './NoteEditor';
 import { ChevronLeftIcon } from '@heroicons/react/20/solid';

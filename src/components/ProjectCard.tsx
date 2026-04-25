@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { format, addDays, isAfter, startOfDay } from 'date-fns';
 import type { ProjectDetails } from '../types/project';
 import { storageService } from '../services/storage';

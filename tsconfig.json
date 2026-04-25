@@ -22,5 +22,15 @@
     }
   },
   "include": ["src"],
+  "exclude": [
+    "src/app.ts",
+    "src/components/MainStack.tsx",
+    "src/components/LoadingPlaceholder.tsx",
+    "src/components/ScreenOne.tsx",
+    "src/components/ScreenTwo.tsx",
+    "src/services/auth.service.ts",
+    "src/services/storage.service.ts",
+    "src/services/firebase.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

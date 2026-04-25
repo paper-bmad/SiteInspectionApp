@@ -402,7 +402,7 @@ export function ProjectsScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [_searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 

@@ -1,4 +1,4 @@
-import { format, addMonths } from 'date-fns';
+import { format } from 'date-fns';
 import { TimelineBar } from './TimelineBar';
 import type { BlockTimeline } from '../../types/project';
 

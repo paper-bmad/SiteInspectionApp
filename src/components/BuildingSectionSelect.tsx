@@ -58,7 +58,7 @@ export function BuildingSectionSelect({ sections, value, onChange }: BuildingSec
               <ChevronUpDownIcon className="h-5 w-5 text-gray-400" />
             </Listbox.Button>
             <Listbox.Options className="absolute z-10 mt-1 w-full bg-white rounded-xl shadow-lg max-h-60 overflow-auto">
-              {currentSection.subsections.map((subsection) => (
+              {currentSection.subsections.map((subsection: any) => (
                 <Listbox.Option
                   key={subsection}
                   value={subsection}

@@ -8,7 +8,6 @@ import { WeatherRisks } from './WeatherRisks';
 import { TextSizeControl } from './TextSizeControl';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ChevronLeftIcon } from '@heroicons/react/20/solid';
-import { sendErrorLog } from '../utils/errorLogger';
 
 const textSizeClasses = {
   'xs': 'text-xs',
@@ -24,12 +23,12 @@ const textSizeClasses = {
 type TextSize = keyof typeof textSizeClasses;
 
 export function ProjectBriefing() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectId: _projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const [project, setProject] = useState<ProjectDetails | null>(null);
   const [textSize, setTextSize] = useState<TextSize>('lg');
-  const [insuranceError, setInsuranceError] = useState<string | null>(null);
+  const [_insuranceError, _setInsuranceError] = useState<string | null>(null);
 
   useEffect(() => {
     if (location.state?.project) {

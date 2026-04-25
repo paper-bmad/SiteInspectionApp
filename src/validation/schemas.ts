@@ -13,7 +13,7 @@ export const photoSchema = z.object({
   notes: z.string().optional(),
   gpsLocation: gpsLocationSchema,
   timestamp: z.string().datetime()
-});
+}).passthrough();
 
 export const inspectionSchema = z.object({
   id: z.string().min(1),
@@ -21,5 +21,7 @@ export const inspectionSchema = z.object({
   status: z.enum(['draft', 'completed']),
   photos: z.array(photoSchema),
   createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime()
-});
+  updatedAt: z.string().datetime(),
+  defectCounter: z.number().int().min(0).default(0),
+  riskCounter: z.number().int().min(0).default(0),
+}).passthrough();

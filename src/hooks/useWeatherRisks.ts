@@ -24,7 +24,7 @@ const WEATHER_RISK_TABLE: Array<{
   risks: Risk[];
 }> = [
   {
-    condition: (weather) => weather?.temp <= 5,
+    condition: (weather) => (weather?.temp ?? Infinity) <= 5,
     risks: [
       {
         category: 'Cold/Freezing',
@@ -36,7 +36,7 @@ const WEATHER_RISK_TABLE: Array<{
     ]
   },
   {
-    condition: (weather) => weather?.temp >= 25,
+    condition: (weather) => (weather?.temp ?? -Infinity) >= 25,
     risks: [
       {
         category: 'Hot/Sunny',
@@ -48,7 +48,7 @@ const WEATHER_RISK_TABLE: Array<{
     ]
   },
   {
-    condition: (weather) => weather?.windSpeed >= 10,
+    condition: (weather) => (weather?.windSpeed ?? 0) >= 10,
     risks: [
       {
         category: 'Wind',
@@ -60,7 +60,7 @@ const WEATHER_RISK_TABLE: Array<{
     ]
   },
   {
-    condition: (weather) => weather?.description.toLowerCase().includes('rain'),
+    condition: (weather) => weather?.description.toLowerCase().includes('rain') ?? false,
     risks: [
       {
         category: 'Wet/Rain',
