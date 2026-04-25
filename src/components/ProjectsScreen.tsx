@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ProjectDetails } from '../types/project';
 import { ProjectCard } from './ProjectCard';
 import { LoadingSpinner } from './LoadingSpinner';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import debounce from 'lodash.debounce';
+import { authService } from '../services/auth';
 
 const MOCK_PROJECTS: ProjectDetails[] = [
   {
@@ -402,7 +403,6 @@ export function ProjectsScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [_searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -450,22 +450,26 @@ export function ProjectsScreen() {
     navigate('/preferences');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
+  const handleLogout = async () => {
+    await authService.logout();
     navigate('/', { replace: true });
   };
 
-  const handleSearch = debounce((query: string) => {
-    setSearchQuery(query);
-    const filtered = MOCK_PROJECTS.filter(project => 
-      project.name.toLowerCase().includes(query.toLowerCase()) ||
-      project.address.city.toLowerCase().includes(query.toLowerCase()) ||
-      project.reference.toLowerCase().includes(query.toLowerCase())
-    );
-    setDisplayedProjects(filtered.slice(0, ITEMS_PER_PAGE));
-    setPage(1);
-    setHasMore(filtered.length > ITEMS_PER_PAGE);
-  }, 300);
+  const handleSearch = useMemo(
+    () => debounce((query: string) => {
+      const filtered = MOCK_PROJECTS.filter(project =>
+        project.name.toLowerCase().includes(query.toLowerCase()) ||
+        project.address.city.toLowerCase().includes(query.toLowerCase()) ||
+        project.reference.toLowerCase().includes(query.toLowerCase())
+      );
+      setDisplayedProjects(filtered.slice(0, ITEMS_PER_PAGE));
+      setPage(1);
+      setHasMore(filtered.length > ITEMS_PER_PAGE);
+    }, 300),
+    []
+  );
+
+  useEffect(() => () => handleSearch.cancel(), [handleSearch]);
 
   if (error) {
     return (
