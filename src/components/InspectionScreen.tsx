@@ -22,6 +22,7 @@ export function InspectionScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showGpsWarning, setShowGpsWarning] = useState(false);
   const [lastAutoSave, setLastAutoSave] = useState<Date>(new Date());
 
   // Load saved photos on mount
@@ -110,11 +111,12 @@ export function InspectionScreen() {
       setError(null);
 
       let gpsLocation: Photo['gpsLocation'];
+      let gpsUnavailable = false;
       try {
         gpsLocation = await cameraService.getLocation();
       } catch {
-        // Geolocation unavailable — photo is still saved without coordinates
         gpsLocation = undefined;
+        gpsUnavailable = true;
       }
 
       const newPhoto: Photo = {
@@ -130,12 +132,16 @@ export function InspectionScreen() {
         timestamp: new Date().toISOString()
       };
 
-      // Save photo immediately
       await storageService.savePhoto(projectId, newPhoto);
-      
+
       setCurrentPhoto(newPhoto);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 1500);
+      if (gpsUnavailable) {
+        setShowGpsWarning(true);
+        setTimeout(() => setShowGpsWarning(false), 2500);
+      } else {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 1500);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to take photo');
     } finally {
@@ -250,6 +256,9 @@ export function InspectionScreen() {
 
       {showSuccess && (
         <SuccessAnimation message="Photo saved!" />
+      )}
+      {showGpsWarning && (
+        <SuccessAnimation message="Photo saved — GPS unavailable" variant="warning" />
       )}
     </div>
   );
