@@ -21,6 +21,7 @@ export function CameraPreview({ onCapture, onClose }: CameraPreviewProps) {
   const streamRef = useRef<MediaStream | null>(null);
   const [currentHeading, setCurrentHeading] = useState<number | null>(null);
   const [isCompassAvailable, setIsCompassAvailable] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   useEffect(() => {
     async function setupDevices() {
@@ -51,6 +52,11 @@ export function CameraPreview({ onCapture, onClose }: CameraPreviewProps) {
         }
       } catch (err) {
         console.error('Error accessing devices:', err);
+        setCameraError(
+          err instanceof Error && err.name === 'NotAllowedError'
+            ? 'Camera permission denied. Please allow camera access and try again.'
+            : 'Could not access camera. Please check your device and try again.'
+        );
       }
     }
 
@@ -118,6 +124,17 @@ export function CameraPreview({ onCapture, onClose }: CameraPreviewProps) {
       onCapture(imageData, heading);
     }
   };
+
+  if (cameraError) {
+    return (
+      <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center gap-6 p-8">
+        <p className="text-white text-center text-lg">{cameraError}</p>
+        <button onClick={onClose} className="btn btn-secondary bg-white/10 backdrop-blur-sm text-white">
+          Close
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black z-50">
