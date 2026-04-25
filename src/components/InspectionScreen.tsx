@@ -109,14 +109,20 @@ export function InspectionScreen() {
       setIsLoading(true);
       setError(null);
 
-      const location = await cameraService.getLocation();
+      let gpsLocation: Photo['gpsLocation'];
+      try {
+        gpsLocation = await cameraService.getLocation();
+      } catch {
+        // Geolocation unavailable — photo is still saved without coordinates
+        gpsLocation = undefined;
+      }
 
       const newPhoto: Photo = {
         id: Date.now().toString(),
         uri: imageData,
         category: currentCategory,
         notes: currentNote,
-        gpsLocation: location,
+        gpsLocation,
         compass: {
           direction: heading.direction as 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW',
           degrees: heading.degrees

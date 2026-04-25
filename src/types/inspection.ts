@@ -15,7 +15,7 @@ export interface Photo {
   category: 'Defect' | 'Risk' | 'Overview';
   referenceId?: string; // Format: DEF-2024-001 or RISK-2024-001
   notes?: string;
-  gpsLocation: {
+  gpsLocation?: {
     latitude: number;
     longitude: number;
     altitude: number | null;

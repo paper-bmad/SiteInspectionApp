@@ -11,7 +11,7 @@ export const photoSchema = z.object({
   uri: z.string().min(1),
   category: z.enum(['Defect', 'Risk', 'Overview']),
   notes: z.string().optional(),
-  gpsLocation: gpsLocationSchema,
+  gpsLocation: gpsLocationSchema.optional(),
   timestamp: z.string().datetime()
 }).passthrough();
 

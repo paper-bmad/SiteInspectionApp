@@ -30,10 +30,11 @@ export function PhotoDetail({ photo, onClose }: PhotoDetailProps) {
           {photo.notes && (
             <p className="text-gray-700">{photo.notes}</p>
           )}
-          <p className="text-sm text-gray-500">
-            📍 {photo.gpsLocation.latitude.toFixed(6)}, 
-            {photo.gpsLocation.longitude.toFixed(6)}
-          </p>
+          {photo.gpsLocation && (
+            <p className="text-sm text-gray-500">
+              📍 {photo.gpsLocation.latitude.toFixed(6)}, {photo.gpsLocation.longitude.toFixed(6)}
+            </p>
+          )}
         </div>
       </div>
     </div>

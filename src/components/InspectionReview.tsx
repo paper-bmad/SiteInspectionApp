@@ -136,10 +136,12 @@ export function InspectionReview() {
                 <div>
                   <dt className="text-gray-600 inline">GPS: </dt>
                   <dd className="inline">
-                    {photo.gpsLocation.latitude.toFixed(6)}, {photo.gpsLocation.longitude.toFixed(6)}
+                    {photo.gpsLocation
+                      ? `${photo.gpsLocation.latitude.toFixed(6)}, ${photo.gpsLocation.longitude.toFixed(6)}`
+                      : 'Unavailable'}
                   </dd>
                 </div>
-                {photo.gpsLocation.altitude && (
+                {photo.gpsLocation?.altitude != null && (
                   <div>
                     <dt className="text-gray-600 inline">Altitude: </dt>
                     <dd className="inline">{photo.gpsLocation.altitude.toFixed(2)}m</dd>
