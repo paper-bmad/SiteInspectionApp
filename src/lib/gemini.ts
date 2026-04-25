@@ -36,7 +36,7 @@ export async function reviewInspectionNote(
   }
 
   try {
-    const model = genAI.getGenerativeModel({ 
+    const model = genAI.getGenerativeModel({
       model: "gemini-1.5-pro",
       generationConfig: {
         temperature: 0.45,
@@ -73,11 +73,13 @@ Format your response exactly like this:
 
     const result = await model.generateContent([SYSTEM_PROMPT, prompt]);
     const response = await result.response;
-    const text = response.text();
+    const raw = response.text();
+    // Strip markdown code fences that LLMs commonly wrap JSON in
+    const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
     try {
       // Attempt to parse the response as JSON
-      const parsed = JSON.parse(text.trim());
+      const parsed = JSON.parse(text);
 
       // Validate the response structure
       if (!parsed.improved || !parsed.changes || 
