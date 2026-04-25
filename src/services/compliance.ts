@@ -11,6 +11,25 @@ const SUPABASE_CONFIGURED = !!(
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
+const delay = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  maxRetries = 3,
+): Promise<Response> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(url, init);
+    if (response.status === 429 && attempt < maxRetries - 1) {
+      const retryAfter = parseInt(response.headers.get('Retry-After') ?? '5', 10);
+      await delay(retryAfter * 1000);
+      continue;
+    }
+    return response;
+  }
+  return fetch(url, init);
+}
+
 async function persistQuery(query: ComplianceQuery, userId: string): Promise<string | null> {
   if (!SUPABASE_CONFIGURED) return null;
   const bp = query.buildingParameters;
@@ -48,7 +67,7 @@ async function persistReport(report: ComplianceReport, userId: string): Promise<
 }
 
 async function callComplianceAPI(query: ComplianceQuery): Promise<ComplianceReport> {
-  const response = await fetch(`${COMPLIANCE_API_URL}/check`, {
+  const response = await fetchWithRetry(`${COMPLIANCE_API_URL}/check`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(query),
@@ -61,7 +80,7 @@ async function callComplianceAPIStream(
   query: ComplianceQuery,
   onChunk: (text: string) => void,
 ): Promise<ComplianceReport> {
-  const response = await fetch(`${COMPLIANCE_API_URL}/check/stream`, {
+  const response = await fetchWithRetry(`${COMPLIANCE_API_URL}/check/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(query),
@@ -702,7 +721,7 @@ export const complianceService = {
     const imageBase64 = btoa(binary);
     const mediaType = file.type || 'image/png';
 
-    const response = await fetch(`${COMPLIANCE_API_URL}/analyze`, {
+    const response = await fetchWithRetry(`${COMPLIANCE_API_URL}/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageBase64, mediaType }),
