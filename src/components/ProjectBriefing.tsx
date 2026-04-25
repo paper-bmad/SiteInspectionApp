@@ -8,6 +8,7 @@ import { WeatherRisks } from './WeatherRisks';
 import { TextSizeControl } from './TextSizeControl';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ChevronLeftIcon } from '@heroicons/react/20/solid';
+import { useWeather } from '../hooks/useWeather';
 
 const textSizeClasses = {
   'xs': 'text-xs',
@@ -28,7 +29,9 @@ export function ProjectBriefing() {
   const location = useLocation();
   const [project, setProject] = useState<ProjectDetails | null>(null);
   const [textSize, setTextSize] = useState<TextSize>('lg');
-  const [_insuranceError, _setInsuranceError] = useState<string | null>(null);
+
+  // Hardcoded UK coords — geocoding not yet implemented; deduped by React Query with WeatherCard
+  const { data: weatherData } = useWeather({ latitude: 53.4808, longitude: -2.2426 });
 
   useEffect(() => {
     if (location.state?.project) {
@@ -234,8 +237,8 @@ export function ProjectBriefing() {
             longitude={-2.2426}
           />
           
-          <WeatherRisks 
-            weatherData={{ current: null }}
+          <WeatherRisks
+            weatherData={weatherData ?? null}
             constructionType={project.construction.superstructure.type}
           />
         </div>
