@@ -1,6 +1,11 @@
 import localforage from 'localforage';
 import type { UserPreferences } from '../types/preferences';
 
+const store = localforage.createInstance({
+  name: 'BuildwellAI',
+  storeName: 'preferences',
+});
+
 const PREFERENCES_KEY = 'user_preferences';
 
 const defaultPreferences: UserPreferences = {
@@ -31,20 +36,8 @@ const defaultPreferences: UserPreferences = {
 };
 
 export const preferencesService = {
-  init: async () => {
-    await localforage.config({
-      name: 'BuildwellAI',
-      storeName: 'preferences'
-    });
-
-    const existing = await localforage.getItem<UserPreferences>(PREFERENCES_KEY);
-    if (!existing) {
-      await localforage.setItem(PREFERENCES_KEY, defaultPreferences);
-    }
-  },
-
   getPreferences: async (): Promise<UserPreferences> => {
-    const prefs = await localforage.getItem<UserPreferences>(PREFERENCES_KEY);
+    const prefs = await store.getItem<UserPreferences>(PREFERENCES_KEY);
     return prefs || defaultPreferences;
   },
 
@@ -64,14 +57,14 @@ export const preferencesService = {
       storage: {
         ...current.storage,
         ...updates.storage,
-        autoBackup: true // Always enforce automatic backup
+        autoBackup: true,
       },
       display: {
         ...current.display,
         ...updates.display
       }
     };
-    await localforage.setItem(PREFERENCES_KEY, updated);
+    await store.setItem(PREFERENCES_KEY, updated);
     return updated;
   },
 

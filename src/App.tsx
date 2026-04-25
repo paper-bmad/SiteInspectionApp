@@ -8,10 +8,10 @@ import { InspectionReview } from './components/InspectionReview';
 import { UserPreferencesScreen } from './components/UserPreferences';
 import { ComplianceChecker } from './components/ComplianceChecker';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { authService } from './services/auth';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = localStorage.getItem('auth_token') !== null;
-  return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
+  return authService.isAuthenticated() ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 function App() {
