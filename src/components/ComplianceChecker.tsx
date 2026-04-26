@@ -23,6 +23,7 @@ const ALL_DOMAINS: ComplianceDomain[] = [
   'fire_safety', 'ventilation', 'structural', 'energy', 'overheating', 'acoustics', 'sap',
   'drainage', 'access', 'electrical', 'security',
   'site_prep', 'sanitation', 'falling', 'broadband', 'ev_charging',
+  'insulation', 'combustion', 'glazing',
 ];
 
 const CORE_DOMAINS: ComplianceDomain[] = [

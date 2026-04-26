@@ -14,7 +14,10 @@ export type ComplianceDomain =
   | 'sanitation'
   | 'falling'
   | 'broadband'
-  | 'ev_charging';
+  | 'ev_charging'
+  | 'insulation'
+  | 'combustion'
+  | 'glazing';
 
 export type BuildingUse =
   | 'Residential'
@@ -118,4 +121,7 @@ export const DOMAIN_LABELS: Record<ComplianceDomain, string> = {
   falling: 'Falling Protection (Doc K)',
   broadband: 'Broadband (Doc R)',
   ev_charging: 'EV Charging (Doc S)',
+  insulation: 'Cavity Insulation (Doc D)',
+  combustion: 'Combustion Appliances (Doc J)',
+  glazing: 'Glazing Safety (Doc N)',
 };
